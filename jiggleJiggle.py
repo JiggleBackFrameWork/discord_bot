@@ -1,6 +1,3 @@
-import pafy
-import discord
-from discord.ext import commands
 import bot
 # from discord.ext import commands
 

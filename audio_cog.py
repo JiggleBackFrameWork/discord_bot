@@ -222,7 +222,7 @@ class AudioCog:
                         best_url = find_best_url(query)
                         self.music_queue.append(best_url)
 
-            elif "youtube.com/playlist" or "&list=" in query:
+            elif "youtube.com/playlist" in query or "&list=" in query:
                 print("YouTube Playlist")
                 if "&index" in query:
                     query = re.sub(r'&index=\d+', '', query)

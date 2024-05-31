@@ -150,13 +150,13 @@ class AudioCog:
             song_url = str(self.music_queue[0])
 
             artist = ""
-            song = ""
+            title = ""
             url = ""
 
             if await check_if_spotify(song_url):
                 print("SPOT")
                 # ADD SPOT PLAYLIST HERE
-                if check_if_playlist(song):
+                if check_if_playlist(title):
                     print("Is playlist")
 
                 artist, song, url, success = await get_yt_url(song_url)
@@ -167,8 +167,8 @@ class AudioCog:
             if not self.is_connected:
                 self.voice = await self.vc.connect()
                 self.is_connected = True
-            print(f"\n\nThis is the URL: {url}\nThis is the song: {song}")
-            await self.play_sound(interaction, url, song, send_message)
+            print(f"\n\nThis is the URL: {url}\nThis is the song: {title}")
+            await self.play_sound(interaction, url, title, send_message)
 
             if success is not True:
                 message = f"I'm sorry, I cant find anything with the url: {song_url}. Are you sure you typed that right?"
@@ -269,7 +269,7 @@ class AudioCog:
             self.is_paused = False
             self.voice.resume()
 
-    async def skip(self):
+    async def skip(self) -> str:
         print("SKIPPING")
         if self.is_playing and not self.is_paused:
             self.is_skipped = True

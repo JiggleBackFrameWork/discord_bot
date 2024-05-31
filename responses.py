@@ -37,6 +37,13 @@ async def get_response(interaction):
             )
             return return_message
 
+        elif "lenny" in p_message:
+            return_message: Embed = discord.Embed(
+                description="Tell me about the rabbits George...",
+                color=colors.yellow
+            )
+            return return_message
+
         elif "getSettings" in p_message:
 
             if bot.settings:

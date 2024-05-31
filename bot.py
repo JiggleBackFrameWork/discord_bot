@@ -120,8 +120,13 @@ def run_discord_bot(TOKEN_1):
                 interaction.content = user_message
                 await send_message(interaction, await resp.get_response(interaction), is_private=True)
 
-            elif user_message == '!restart':
+            elif user_message == '!restart' or user_message == '!lenny':
+                if user_message == '!lenny':
 
+                    await send_message(interaction, await resp.get_response(interaction))
+                    await client_1.close()
+
+                print("HERERERERER")
                 await restart(interaction)
 
             else:

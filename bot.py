@@ -5,7 +5,7 @@ import random
 import discord
 import audio_cog
 import responses as resp
-# from discord.ext import commands
+from discord.ext import commands
 import audio_cog
 
 import servers_settings
@@ -22,8 +22,8 @@ async def send_is_connected_error(interaction):
 
 
 directory = 'D:/Sound Board/discord/'
-cringe_directory = 'D:/CodingDev/Python/discordBot/cringe/'
-ffmpeg_executable = "D:/CodingDev/Python/discordBot/FFMPEG/ffmpeg.exe"
+cringe_directory = 'D:/CodingDev/Python/discord_bot/cringe/'
+ffmpeg_executable = "D:/CodingDev/Python/discord_bot/FFMPEG/ffmpeg.exe"
 PLAY_SOUND_RANDOM_MAX = '16'
 
 settings = {}
@@ -137,6 +137,30 @@ def run_discord_bot(TOKEN_1):
             print(user_message)
             await send_message(interaction, await resp.get_response(interaction))
 
+    @client_1.event
+    async def on_message_delete(message):
+        # Ensure that the message was not a system message
+        if message.author.bot:
+            return
+
+            # Construct the message link
+        message_link = f"https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id}"
+
+        # Log the deleted message content and author
+        log_message = f'Message from {message.author} deleted in {message.channel}: {message.content}, check this: {message_link}'
+
+        # Check for attachments
+        if message.attachments:
+            log_message += "\nAttachments:\n"
+            for attachment in message.attachments:
+                log_message += f"{attachment.url}\n"
+
+        print(log_message)
+
+        log_channel = discord.utils.get(message.guild.text_channels, name="the-eye")
+        if log_channel:
+            await log_channel.send(log_message)
+
     def get_random_greeting():
         greetings_file = "uwu_greetings.txt"  # Replace with your file path
         with open(greetings_file, "r", encoding="utf-8") as file2:
@@ -201,3 +225,7 @@ async def server_check_sudoers(author, server):
         return True
     else:
         return False
+
+
+def command():
+    return None

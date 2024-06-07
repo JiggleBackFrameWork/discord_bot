@@ -1,35 +1,12 @@
 import asyncio
 import os
 import random
-
-import spotdl
-from discord import Embed
-import yt_dlp
-import discord
-from playsound import playsound
-from pydub import AudioSegment
-
-
-
-
-import spotify_dl.spotify
-import vlc
-from pafy import pafy
-from pytube import YouTube
-from yt_dlp import YoutubeDL
-import ffmpeg
-from youtube_dl import YoutubeDL
-from moviepy.video.io.VideoFileClip import VideoFileClip
-import time
-import requests
-from urllib.parse import urlparse, parse_qs
-import subprocess
-import json
-
 import re
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 
+import discord
+import requests
+import yt_dlp
+from discord import Embed
 
 import bot
 import colors
@@ -156,7 +133,7 @@ class AudioCog:
             if await check_if_spotify(song_url):
                 print("SPOT")
                 # ADD SPOT PLAYLIST HERE
-                if check_if_playlist(title):
+                if await check_if_playlist(title):
                     print("Is playlist")
 
                 artist, song, url, success = await get_yt_url(song_url)

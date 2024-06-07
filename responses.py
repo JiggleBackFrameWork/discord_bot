@@ -2,10 +2,12 @@ import random
 from discord.ui import Button, View
 import discord
 from discord import Embed
+from discord.ext import commands
 
 import bot
 import colors
 from audio_cog import AudioCog
+
 
 
 async def get_response(interaction):
@@ -21,7 +23,6 @@ async def get_response(interaction):
             # Check if an audio_cog instance already exists for the guild
 
             server = bot.settings[guild_id]
-
 
         if p_message == 'hello':
             return_message: Embed = discord.Embed(
@@ -209,7 +210,11 @@ General commands:
             for button in buttons:
                 view.add_item(button.button)
 
-            await interaction.channel.send("Pick a radio:", view=view)
+            message: Embed = discord.Embed(
+                description="Pick a radio:",
+                color=colors.cadetblue
+            )
+            await interaction.channel.send(embed=message, view=view)
 
             for button in buttons:
                 button.button.callback = button.button_callback
@@ -231,7 +236,6 @@ General commands:
                 color=result[1]
             )
             return return_message
-
 
         elif 'p test' == p_message:
             results = await bot.settings[guild_id].audio_cog.play("https://www.youtube.com/watch?v=zAnQg7uFQCI",
@@ -391,3 +395,20 @@ class EmbededMessages:
 
     def set_interaction(self, interaction):
         self.interaction = interaction
+
+
+class ButtonScroll:
+    from typing import List
+
+    def __init__(self, buttons: List[EmbededMessages]):
+        assert isinstance(buttons, list), "buttons must be a list"
+        for button in buttons:
+            assert isinstance(button, EmbededMessages), "All items in buttons must be of type EmbededMessages"
+        self.buttons = buttons
+
+
+    def createScreen(self):
+        MAX_BUTTON_PER_PANEL = 23
+        if len(self.buttons) <= MAX_BUTTON_PER_PANEL:
+
+            self.buttons

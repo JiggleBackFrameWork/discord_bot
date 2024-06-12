@@ -1,10 +1,10 @@
 import audio_cog
 
 
-class ServersSettings:
+class Server_Settings:
     def __init__(self, guild):
         self.guild_id = guild.id
-        self.audio_cog = audio_cog.AudioCog(guild.id)
+        self.audio_cog = audio_cog.AudioCog()
         self.server_annoyable_voice = False
         self.server_annoyable_text = False
         self.music_connect_start_sound = False
@@ -13,7 +13,12 @@ class ServersSettings:
         self.server_radios = {}
         self.guild_info = guild
 
-
+    async def on_init(self, guild):
+        # Initialize the settings for the server
+        self.setting_sudoer_list = ["admin"]
+        self.audio_cog = audio_cog.AudioCog()
+        self.is_playing = False
+        print(f"Initialized settings for guild {guild.id}")
 
 
     def get_setting(self):

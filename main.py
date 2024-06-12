@@ -3,7 +3,7 @@ import os
 import sys
 
 # Replace 'bot.py' with the filename of your bot script
-BOT_SCRIPT = 'jiggleJiggle.py'
+BOT_SCRIPT = 'bot.py'
 
 # Run the bot
 if __name__ == '__main__':

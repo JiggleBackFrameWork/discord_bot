@@ -1,37 +1,14 @@
 import asyncio
 import os
 import random
-
-import spotdl
-from discord import Embed
-import yt_dlp
-import discord
-from playsound import playsound
-from pydub import AudioSegment
-
-
-
-
-import spotify_dl.spotify
-import vlc
-from pafy import pafy
-from pytube import YouTube
-from yt_dlp import YoutubeDL
-import ffmpeg
-from youtube_dl import YoutubeDL
-from moviepy.video.io.VideoFileClip import VideoFileClip
-import time
-import requests
-from urllib.parse import urlparse, parse_qs
-import subprocess
-import json
-
 import re
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+
+import discord
+import requests
+import yt_dlp
+from discord import Embed
 
 
-import bot
 import colors
 
 
@@ -56,8 +33,8 @@ async def pick_random_sound(directory):
 
 
 class AudioCog:
-    def __init__(self, guild_id):
-        self.guild_id = guild_id
+    def __init__(self):
+
         self.voice = None
         self.is_playing = False
         self.is_paused = False
@@ -85,7 +62,7 @@ class AudioCog:
             return_message = Embed(
                 description=f"Now playing {title}",
                 color=colors.green)
-            await bot.send_message(interaction, return_message)
+            await interaction.send(embed=return_message)
 
         self.voice.play(audio_source)
 
@@ -111,10 +88,9 @@ class AudioCog:
                 song = str(self.music_queue[0])
 
                 if await check_if_spotify(song):
-                    print("SPOT")
+                    print("SPOT SPOT")
                     # ADD SPOT PLAYLIST HERE
-                    if check_if_playlist(song):
-                        print("Is playlist")
+
                     artist, title, url, success = await get_yt_url(song)
 
 
@@ -129,7 +105,7 @@ class AudioCog:
                     return_message = Embed(
                         description=f"Now playing {title}",
                         color=colors.green)
-                    await bot.send_message(interaction, return_message)
+                    await interaction.send(embed=return_message)
 
                 self.voice.play(audio_source)
                 self.music_queue.pop(0)
@@ -139,6 +115,7 @@ class AudioCog:
             try:
                 info_dict = ydl.extract_info(query, download=False)
                 video_title = info_dict.get('title', None)
+                print(f"TITITIITITIITITI {video_title}")
                 return info_dict['url'], video_title, True
             except Exception as e:
                 print(e)
@@ -149,17 +126,14 @@ class AudioCog:
             self.is_playing = True
             song_url = str(self.music_queue[0])
 
-            artist = ""
-            title = ""
-            url = ""
+            artist = "ERROR GETTING ARTIST"
+            title = "ERROR GETTING TITLE"
+            url = "ERROR GETTING URL"
 
             if await check_if_spotify(song_url):
                 print("SPOT")
-                # ADD SPOT PLAYLIST HERE
-                if check_if_playlist(title):
-                    print("Is playlist")
 
-                artist, song, url, success = await get_yt_url(song_url)
+                artist, title, url, success = await get_yt_url(song_url)
 
             else:
                 url, title, success = await self.find_url(song_url)
@@ -176,7 +150,7 @@ class AudioCog:
                 return_message = Embed(
                     description=message,
                     color=color)
-                await bot.send_message(interaction, return_message)
+                await interaction.send(embed=return_message)
 
         else:
             self.is_playing = False
@@ -309,7 +283,7 @@ class AudioCog:
             await asyncio.sleep(0.1)
 
     async def play_random_sound(self, interaction, directory, ffmpeg_executable, PLAY_SOUND_RANDOM_MAX):
-        user_message = str(interaction.content)
+        user_message = str(interaction.message.content)
         username = str(interaction.author)
 
         try:
@@ -323,7 +297,7 @@ class AudioCog:
                 description="Connect to a voice channel!",
                 color=colors.cringe
             )
-            await bot.send_message(interaction, return_message)
+            await interaction.send(embed=return_message)
             return
 
 
@@ -333,7 +307,7 @@ class AudioCog:
                 color=colors.burlywood
             )
             self.voice = await self.vc.connect()
-            await bot.send_message(interaction, return_message)
+            await interaction.send(embed=return_message)
             self.voice.play(
                 discord.FFmpegPCMAudio(await pick_random_sound(directory), executable=ffmpeg_executable))
             while self.voice.is_playing():
@@ -356,7 +330,7 @@ class AudioCog:
                 return_message = Embed(
                     description=f'Playing for {amount_o_times} times',
                     color=colors.peru)
-                await bot.send_message(interaction, return_message)
+                await interaction.send(embed=return_message)
                 self.voice = await self.vc.connect()
                 for x in range(int(amount_o_times)):
                     self.voice.play(
@@ -379,59 +353,14 @@ async def check_if_spotify(url):
     else:
         return False
 
-async def check_if_playlist(url):
-    if "/playlist" in url:
-        return True
-    else:
-        return False
+
 
 async def get_yt_url(spotify_url):
 
     print("checking URL")
-    ''' Old cringe code... SLOW!!!!
-    command_url = f'spotdl url "{spotify_url}'
-    results1 = subprocess.run(command_url, shell=True, capture_output=True, text=True)
-    urls = results1.stdout.split("\n")
-    url = urls[2]
-    print(url)
-
-    command = f'spotdl save "{spotify_url}" --save-file -'
-
-    # Run the command and capture the output
-    result = subprocess.run(command, stdout=subprocess.PIPE, shell=True, text=True)
-
-    # Extract the JSON portion from the output
-    json_start = result.stdout.find("[")
-    json_end = result.stdout.rfind("]") + 1
-    json_output = result.stdout[json_start:json_end]
-
-    # Print the raw JSON output
-    print("Raw JSON Output:")
-    print(json_output)
-
-    try:
-        # Attempt to parse the extracted JSON output
-        metadata_list = json.loads(json_output)
-
-        # Now metadata_list contains the metadata as a list of dictionaries
-        # Extracting relevant information
-
-        name = metadata_list[0].get('name')
-        artist = metadata_list[0].get('artists')
-        album = metadata_list[0].get('album_name')
-        # url = metadata_list[0].get('url')
-
-        print(name, artist, album, url)
-        return artist, name, url, True
-
-    except json.JSONDecodeError as e:
-        # Handle JSON decoding errors
-        print("Error decoding JSON:", e)
-        return None, None, None, False
-    '''
 
     title, artist = get_spotify_info(spotify_url)
-    query = f"{title} {artist}"
+    query = f" title and artist: {title} {artist}"
     url = find_best_url(query)
     return artist, title, url, True
 

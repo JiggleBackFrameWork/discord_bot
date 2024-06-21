@@ -33,14 +33,13 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot_prefix = '!'
+
 bot = commands.Bot(command_prefix=bot_prefix, intents=intents)
 
 settings = {}
 
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name}')
+
 
 
 @bot.event

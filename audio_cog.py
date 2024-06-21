@@ -394,9 +394,6 @@ def get_spotify_info(url):
 
 
 def find_best_url(query):
-    # Search query
-    # query = f"{title} {artist}"
-
     # Create YouTube-DL options
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -410,16 +407,24 @@ def find_best_url(query):
 
     # Search for the best URL
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(query, download=False)
-        if 'entries' in info:
-            video = info['entries'][0]
-        else:
-            video = info
+        print(f"Query {query}")
+        try:
+            info = ydl.extract_info(query, download=False)
+            print(f"Query2 {query}")
 
-    # Get the best URL
-    best_url = video['url']
-    print("Best URL:", best_url)
-    return best_url
+            if 'entries' in info and info['entries']:
+                video = info['entries'][0]
+            else:
+                video = info
+
+            # Get the best URL
+            best_url = video['url']
+            print("Best URL:", best_url)
+            return best_url
+
+        except Exception as e:
+            print(f"Error extracting info: {e}")
+            return None
 
 def decode_utf8_string(utf8_string):
     try:

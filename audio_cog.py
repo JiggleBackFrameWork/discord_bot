@@ -1,4 +1,5 @@
 import asyncio
+import html
 import os
 import random
 import re
@@ -7,7 +8,6 @@ import discord
 import requests
 import yt_dlp
 from discord import Embed
-
 
 import colors
 
@@ -19,14 +19,14 @@ async def disappointed_responses(amount_o_times):
     disappointed_phrases = file.readlines()
     file.close()
     range_boi = len(disappointed_phrases) - 1
-    print(range_boi)
+    print("disappointed_phrases range ", range_boi)
     return disappointed_phrases[random.randint(0, range_boi)].format(amount_o_times)
 
 
 async def pick_random_sound(directory):
     files = os.listdir(directory)
     files = [file for file in files if os.path.isfile(os.path.join(directory, file))]
-    print(files)
+    print("files", files)
     if files:
         track = str(random.choice(files))
         return directory + track
@@ -83,24 +83,21 @@ class AudioCog:
             elif (len(self.music_queue) > 0 and not self.is_paused and not self.voice.is_playing()) or self.is_skipped:
                 if self.is_skipped:
                     self.is_skipped = False
-                    print("BREH BREH")
 
                 song = str(self.music_queue[0])
 
                 if await check_if_spotify(song):
-                    print("SPOT SPOT")
                     # ADD SPOT PLAYLIST HERE
 
                     artist, title, url, success = await get_yt_url(song)
 
-
                 else:
 
-                   url, title, success = await self.find_url(song)
+                    url, title, success = await self.find_url(song)
 
                 if success:
                     audio_source = discord.FFmpegPCMAudio(url, executable=self.FFMPEG_EXECUTABLE,
-                                                      **self.FFMPEG_OPTIONS)
+                                                          **self.FFMPEG_OPTIONS)
                 if send_message:
                     return_message = Embed(
                         description=f"Now playing {title}",
@@ -115,7 +112,6 @@ class AudioCog:
             try:
                 info_dict = ydl.extract_info(query, download=False)
                 video_title = info_dict.get('title', None)
-                print(f"TITITIITITIITITI {video_title}")
                 return info_dict['url'], video_title, True
             except Exception as e:
                 print(e)
@@ -126,12 +122,7 @@ class AudioCog:
             self.is_playing = True
             song_url = str(self.music_queue[0])
 
-            artist = "ERROR GETTING ARTIST"
-            title = "ERROR GETTING TITLE"
-            url = "ERROR GETTING URL"
-
             if await check_if_spotify(song_url):
-                print("SPOT")
 
                 artist, title, url, success = await get_yt_url(song_url)
 
@@ -159,7 +150,6 @@ class AudioCog:
 
     async def play(self, query, interaction, send_message=True):
         try:
-            print("CHECKING")
             self.vc = interaction.author.voice.channel
         except Exception:
             self.vc = None
@@ -175,7 +165,7 @@ class AudioCog:
             self.music_queue.append(query)
             print(self.music_queue)
         else:
-            #$ ADD STUFF HERE
+            # $ ADD STUFF HERE
             if "open.spotify.com/playlist/" in query:
                 print("Is a playlist")
                 match = re.search(r'playlist/(\w+)', query)
@@ -183,18 +173,13 @@ class AudioCog:
                 content = r.content.decode('utf-8')  # Decode content as UTF-8
                 pattern = r'content="https://open.spotify.com/track/(\w+)"'
                 matches = re.findall(pattern, content)
+
+                print(f"matches {match}")
+                print(f"pattern {pattern}")
+                print(f"matches {matches}")
                 for track_id in matches:
                     track_url = "https://open.spotify.com/track/" + track_id
-                    print(track_url)
-                    title, artist = get_spotify_info(track_url)
-                    if title and artist:
-                        title = decode_utf8_string(title)
-                        artist = decode_utf8_string(artist)
-                        print("Title:", title)
-                        print("Artist:", artist)
-                        query = f"{title} {artist}"
-                        best_url = find_best_url(query)
-                        self.music_queue.append(best_url)
+                    self.music_queue.append(track_url)
 
             elif "youtube.com/playlist" in query or "&list=" in query:
                 print("YouTube Playlist")
@@ -300,7 +285,6 @@ class AudioCog:
             await interaction.send(embed=return_message)
             return
 
-
         if user_message == "random sound":
             return_message = discord.Embed(
                 description="Playing Random Sound",
@@ -345,7 +329,6 @@ class AudioCog:
                 await interaction.channel.send(await disappointed_responses(amount_o_times))
 
 
-
 async def check_if_spotify(url):
     spotify_url = "open.spotify.com"
     if spotify_url in url:
@@ -354,18 +337,11 @@ async def check_if_spotify(url):
         return False
 
 
-
 async def get_yt_url(spotify_url):
-
-    print("checking URL")
-
     title, artist = get_spotify_info(spotify_url)
-    query = f" title and artist: {title} {artist}"
+    query = f"{title} by {artist}"
     url = find_best_url(query)
     return artist, title, url, True
-
-
-
 
 
 def get_spotify_info(url):
@@ -384,13 +360,60 @@ def get_spotify_info(url):
     title_match = re.search(r'<title>(.*?) - song and lyrics by (.*?) \| Spotify</title>', str(content))
 
     if title_match:
-        title = title_match.group(1)
-        artist = title_match.group(2)
+        print(title_match.group(1))
+        title = decode_html_sequence_strong(title_match.group(1))
+        artist = decode_html_sequence_strong(title_match.group(2))
         print("Title:", title)
         print("Artist:", artist)
         return title, artist
     else:
         return
+
+
+def decode_html_sequence_strong(html_sequence):
+    # Adds an html wrapper
+    decoded_string = html.unescape(decode_html_sequence(html_sequence))
+
+    return decoded_string
+
+
+def decode_html_sequence(html_sequence):
+    # Regular expression to find all hexadecimal sequences in the format \xHH
+    hex_pattern = re.compile(r'\\x([0-9A-Fa-f]{2})')
+
+    # Initialize the decoded string and a list to collect byte values
+    byte_values = []
+    last_pos = 0
+    decoded_string = ''
+
+    # Iterate through all matches of the pattern
+    for match in hex_pattern.finditer(html_sequence):
+        # Append the substring before the current match
+        decoded_string += html_sequence[last_pos:match.start()]
+
+        # Collect the hex value to the byte_values list
+        hex_value = match.group(1)
+        byte_values.append(hex_value)
+
+        # Update the last position
+        last_pos = match.end()
+
+        # If not at the end, decode the collected bytes and reset byte_values
+        if last_pos < len(html_sequence) and not hex_pattern.match(html_sequence[last_pos:last_pos + 4]):
+            hex_string = ''.join(byte_values)
+            bytes_obj = bytes.fromhex(hex_string)
+            decoded_string += bytes_obj.decode('utf-8')
+            byte_values = []
+
+    # Append any remaining part of the string and decode remaining collected bytes
+    decoded_string += html_sequence[last_pos:]
+    if byte_values:
+        hex_string = ''.join(byte_values)
+        bytes_obj = bytes.fromhex(hex_string)
+        decoded_string = decoded_string.replace(hex_pattern.pattern, '')  # Remove the hex pattern
+        decoded_string += bytes_obj.decode('utf-8')
+
+    return decoded_string
 
 
 def find_best_url(query):
@@ -426,8 +449,10 @@ def find_best_url(query):
             print(f"Error extracting info: {e}")
             return None
 
+
 def decode_utf8_string(utf8_string):
     try:
+        print("decoding")
         decoded_string = utf8_string.encode('latin1').decode('utf-8')
     except UnicodeDecodeError:
         decoded_string = utf8_string

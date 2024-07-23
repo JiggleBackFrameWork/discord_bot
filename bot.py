@@ -39,8 +39,9 @@ bot = commands.Bot(command_prefix=bot_prefix, intents=intents)
 settings = {}
 
 
-
-
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user.name}')
 
 @bot.event
 async def on_message(message):
@@ -315,7 +316,7 @@ async def skip(ctx):
 
 
 @bot.command(name="pause", aliases=['resume'])
-async def skip(ctx):
+async def pause(ctx):
     guild_id = None
     if ctx.guild is not None:
         guild_id = ctx.guild.id
